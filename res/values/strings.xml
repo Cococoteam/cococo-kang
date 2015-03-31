@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">cococo</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="mainui_recording_title">녹음</string>
+    <string name="mainui_select_title">파일 선택</string>
+    <string name="mainui_connection_title">병원 연결</string>
+    <string name="mainui_control_title">기기 제어</string>
+    <string name="mainui_setting_title">설정</string>
+    
+    <string name="recui_recording_title">녹음</string>
+    <string name="recui_recording_btn">녹음시작</string>
+    <string name="recui_play_btn">재생</string>
+    
+    <string name="mediaplay_play_btn">∥</string>
+    <string name="mediaplay_stop_btn">■</string>
+    
+</resources>
