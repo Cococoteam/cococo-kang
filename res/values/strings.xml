@@ -13,6 +13,7 @@
     <string name="recui_recording_title">녹음</string>
     <string name="recui_recording_btn">녹음시작</string>
     <string name="recui_play_btn">재생</string>
+    <string name="recui_time_title">녹음경과 시간 -   </string>
     
     <string name="mediaplay_play_btn">∥</string>
     <string name="mediaplay_stop_btn">■</string>

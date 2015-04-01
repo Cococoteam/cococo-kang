@@ -1,12 +1,34 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/filelist_ui"
-    android:orientation="vertical"
+    android:id="@+id/filelist_ui"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/editText1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:gravity="center_horizontal"
+            android:text="파일전송리스트"
+            android:textSize="30sp"
+             >
+
+            <requestFocus />
+        </TextView>
+
+    </LinearLayout>
+
 <ListView
     android:id="@+id/list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     />
+
 </LinearLayout>

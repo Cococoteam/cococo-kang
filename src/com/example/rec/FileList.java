@@ -6,6 +6,8 @@ import java.util.*;
 import android.app.*;
 import android.content.*;
 import android.os.*;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.util.*;
 import android.view.*;
 import android.widget.*;
 
@@ -96,21 +98,67 @@ public class FileList extends Activity {
 				convertView = Inflater.inflate(layout, parent,false);
 			}
 			ImageView img = (ImageView) convertView.findViewById(R.id.img);
-			img.setImageResource(arSrc.get(position).Icon);
+			img.setImageResource(arSrc.get(pos).Icon);
 			
 			TextView txt = (TextView) convertView.findViewById(R.id.text);
-			txt.setText(arSrc.get(position).Name);
+			txt.setText(arSrc.get(pos).Name);
 			
 			Button btn = (Button) convertView.findViewById(R.id.btn);
 			btn.setOnClickListener(new Button.OnClickListener(){
 				@Override
 				public void onClick(View v) {
-					String str = arSrc.get(pos).Name +"를 전송합니다..";
-					Toast.makeText(maincon, str, Toast.LENGTH_SHORT).show();
+					final LinearLayout linear = (LinearLayout) View.inflate(FileList.this , R.layout.mailform, null);
+					
+					TextView filename = (TextView) linear.findViewById(R.id.filename);
+					filename.setText(arSrc.get(pos).Name);
+					new AlertDialog.Builder(FileList.this)
+			    	.setTitle("첨부파일 E-mail 보내기")
+			    	.setIcon(R.drawable.ic_launcher)
+			    	.setView(linear)
+			    	.setNegativeButton("확인", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							EditText send = (EditText) linear.findViewById(R.id.sendemail);
+							EditText password = (EditText) linear.findViewById(R.id.password);
+							EditText receivemail = (EditText) linear.findViewById(R.id.receivemail);
+							EditText message = (EditText) linear.findViewById(R.id.message);
+							EditText title = (EditText) linear.findViewById(R.id.title);
+							
+							Email emailform = new Email();
+							emailform.send = send.getText().toString();
+							emailform.password = password.getText().toString();
+							emailform.receivemail = receivemail.getText().toString();
+							emailform.message = message.getText().toString();
+							emailform.title = title.getText().toString();
+							emailform.filename = sdPath+"/Android/data/com.example.rec/"+arSrc.get(pos).Name;
+							
+							GMailSender sender = new GMailSender(emailform.send, emailform.password);
+							try {
+								sender.sendMail(emailform.title, emailform.message, emailform.send, emailform.receivemail, emailform.filename);
+								
+							} catch (Exception e) {
+								Log.e("error", e.getMessage(), e);
+							}
+					
+						}
+			    	})
+			    	.setPositiveButton("취소", null)
+			    	.show();
 				}
-			});	
+			});
 			return convertView;
 		}
+		
+		
+    }
+    
+    public class Email{
+    	String send;
+    	String password;
+    	String receivemail;
+    	String message;
+    	String title;
+    	String filename;
     }
     
     @Override

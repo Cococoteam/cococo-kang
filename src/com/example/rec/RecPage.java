@@ -1,30 +1,20 @@
 package com.example.rec;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Date;
+import java.io.*;
+import java.util.*;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.SystemClock;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.widget.Button;
-import android.widget.Chronometer;
-import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.app.*;
+import android.content.*;
+import android.graphics.*;
+import android.graphics.Paint.Cap;
+import android.graphics.Paint.Join;
+import android.graphics.Paint.Style;
+import android.media.*;
+import android.os.*;
+import android.util.*;
+import android.view.*;
+import android.widget.*;
+import ca.uol.aig.fftpack.*;
 
 public class RecPage extends Activity {
 	LinearLayout layout;
@@ -36,6 +26,14 @@ public class RecPage extends Activity {
 	int frequency = Middle;
 	int inchannelConfig = AudioFormat.CHANNEL_IN_MONO;
 	int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+	
+	private RealDoubleFFT transformer;
+	int max;
+	
+	ImageView graphView;
+	Bitmap bitmap;
+	Canvas canvas;
+	Paint paint;
 	
 	Button mStartBtn, mPlayBtn;
 	boolean isRecording;
@@ -58,6 +56,14 @@ public class RecPage extends Activity {
 		cm = (Chronometer)findViewById(R.id.chronometer1);
 		mPlayBtn.setEnabled(false);
 		isRecording = false;
+		
+		graphView = (ImageView) this.findViewById(R.id.graphView);
+		bitmap = Bitmap.createBitmap((int) 256, (int) 100, Bitmap.Config.ARGB_8888);
+		canvas = new Canvas(bitmap);
+		paint = new Paint();
+		paint.setColor(Color.GREEN); paint.setStyle(Style.STROKE); paint.setStrokeCap(Cap.ROUND);
+		paint.setStrokeJoin(Join.ROUND); paint.setStrokeWidth(16.0F);
+		graphView.setImageBitmap(bitmap);
 		
 		mStartBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
