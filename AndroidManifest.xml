@@ -15,7 +15,8 @@
         android:name="com.example.SearchMJ.permission.MAPS_RECEIVE"
         android:protectionLevel="signature" >
     </permission>
-
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -43,6 +44,7 @@
         <activity android:name="MapPage" android:label="@layout/mapui"></activity>
         <activity android:name="MediaPlay" android:label="@layout/mediaplay"></activity>
         <activity android:name="FileList" android:label="@layout/filelist"></activity>
+        <activity android:name="com.example.rec.DeviceListActivity" android:theme="@android:style/Theme.DeviceDefault.Dialog"></activity>
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDq6i3Tq0o8fEHhEAq8aGPC0PZ0ILR97Lo" />
