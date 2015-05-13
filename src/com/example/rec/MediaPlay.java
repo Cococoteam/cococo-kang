@@ -35,9 +35,9 @@ public class MediaPlay extends Activity {
 	private final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
 	
 	PlayAudio playTask;
+	AudioTrack audioTrack;
 	
 	int bufferSize;
-	AudioTrack audioTrack;
 	
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +55,7 @@ public class MediaPlay extends Activity {
         playingFile = getsdPath.getStringExtra("Path");
         position = 0;
         
-        bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding) * 2;
+        bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding)*2;
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, frequency, channelOutConfiguration, audioEncoding, bufferSize, AudioTrack.MODE_STREAM);
         
         playTask = new PlayAudio();
@@ -133,6 +133,7 @@ public class MediaPlay extends Activity {
     private class PlayAudio extends AsyncTask<Void, Integer, Void> { 	
     	protected Void doInBackground(Void... params) {
     		short[] audiodata = new short[bufferSize / 4];
+    		isPlaying = true;
     		try {
     			DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(playingFile)));
 

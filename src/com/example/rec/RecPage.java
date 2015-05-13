@@ -51,16 +51,15 @@ public class RecPage extends Activity {
 			public void onClick(View v) {
 				if (isRecording == false) {
 					AudioReader = new RecPage_AudioReader();
-					AudioReader.startReader();
+					AudioReader.initReader();
+					isRecording = true;
 					recordTask = new RecordAudio();
 					recordTask.execute();
 					cm.setBase(SystemClock.elapsedRealtime());
 					cm.start();
-					isRecording = true;
 					mPlayBtn.setEnabled(false);
 					mStartBtn.setText("녹음중지");
 				} else {
-					recordTask.cancel(true);
 					cm.setBase(SystemClock.elapsedRealtime());
 					cm.stop();
 					isRecording = false;
@@ -79,7 +78,6 @@ public class RecPage extends Activity {
 				mPlayBtn.setEnabled(false);
 				Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
 				PlayActivity.putExtra("Path", recordingFile);
-				System.out.println(recordingFile+"위치에 미디어 저장");
 				startActivity(PlayActivity);
 				Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
 			}
@@ -113,14 +111,6 @@ public class RecPage extends Activity {
 		super.onStart();
 		view = line.getView(this);
 		graphLayout.addView(view);
-	}
-	
-	protected void onDestory(){
-		super.onDestroy();
-		recordTask.cancel(true);
-		AudioReader.stopReader();
-		AudioReader = null;
-		realdB = 0;
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
