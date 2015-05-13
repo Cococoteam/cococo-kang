@@ -44,6 +44,7 @@ public final class R {
 		public static final int uiZoomControls = 0x7f010011;
 		public static final int uiZoomGestures = 0x7f010012;
 		public static final int useViewLifecycle = 0x7f010013;
+		public static final int windowTransitionStyle = 0x7f010025;
 		public static final int zOrderOnTop = 0x7f010014;
 	}
 	public static final class color {
@@ -130,6 +131,7 @@ public final class R {
 		public static final int sandbox = 0x7f0b000a;
 		public static final int satellite = 0x7f0b0005;
 		public static final int selectionDetails = 0x7f0b000d;
+		public static final int slide = 0x7f0b0017;
 		public static final int strict_sandbox = 0x7f0b000b;
 		public static final int terrain = 0x7f0b0006;
 		public static final int wrap_content = 0x7f0b000f;
@@ -161,6 +163,8 @@ public final class R {
 		public static final int common_google_play_services_notification_needs_installation_title = 0x7f060007;
 		public static final int common_google_play_services_notification_needs_update_title = 0x7f060008;
 		public static final int common_google_play_services_notification_ticker = 0x7f060006;
+		public static final int common_google_play_services_sign_in_failed_text = 0x7f060024;
+		public static final int common_google_play_services_sign_in_failed_title = 0x7f060023;
 		public static final int common_google_play_services_unknown_issue = 0x7f06001b;
 		public static final int common_google_play_services_unsupported_text = 0x7f06001d;
 		public static final int common_google_play_services_unsupported_title = 0x7f06001c;
@@ -170,12 +174,13 @@ public final class R {
 		public static final int common_open_on_phone = 0x7f060021;
 		public static final int common_signin_button_text = 0x7f06001f;
 		public static final int common_signin_button_text_long = 0x7f060020;
+		public static final int commono_google_play_services_api_unavailable_text = 0x7f060022;
 		public static final int create_calendar_message = 0x7f060005;
 		public static final int create_calendar_title = 0x7f060004;
 		public static final int decline = 0x7f060003;
 		public static final int store_picture_message = 0x7f060001;
 		public static final int store_picture_title = 0x7f060000;
-		public static final int wallet_buy_button_place_holder = 0x7f060022;
+		public static final int wallet_buy_button_place_holder = 0x7f060025;
 	}
 	public static final class style {
 		public static final int Theme_IAPTheme = 0x7f050000;
@@ -189,6 +194,8 @@ public final class R {
 		public static final int AdsAttrs_adSize = 0;
 		public static final int AdsAttrs_adSizes = 1;
 		public static final int AdsAttrs_adUnitId = 2;
+		public static final int[] CustomWalletTheme = { 0x7f010025 };
+		public static final int CustomWalletTheme_windowTransitionStyle = 0;
 		public static final int[] LoadingImageView = { 0x7f010003, 0x7f010004, 0x7f010005 };
 		public static final int LoadingImageView_circleCrop = 2;
 		public static final int LoadingImageView_imageAspectRatio = 1;

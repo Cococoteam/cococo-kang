@@ -2,12 +2,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="5pt" >
+    android:padding="5pt"
+    android:scrollbars="vertical" >
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="보내는사람 e-mail (gmail만 사용)" />
+        android:text="@string/mailform_sender_email" />
 
     <EditText
         android:id="@+id/sendemail"
@@ -15,14 +16,14 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textEmailAddress" >
-
         <requestFocus />
     </EditText>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="보내는사람 e-mail 암호(인증필요)" />
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:text="@string/mailform_sender_passwd" />
 
     <EditText
         android:id="@+id/password"
@@ -34,7 +35,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="받는사람 e-mail" />
+        android:text="@string/mailform_receiver_email" />
 
     <EditText
         android:id="@+id/receivemail"
@@ -46,7 +47,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="e-mail 제목" />
+        android:text="@string/mailform_email_title" />
 
     <EditText
         android:id="@+id/title"
@@ -58,7 +59,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="e-mail 내용" />
+        android:text="@string/mailform_email_text_contents" />
 
     <EditText
         android:id="@+id/message"
@@ -70,14 +71,13 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="첨부파일" />
-
+        android:text="@string/mailform_recorded_file_title" />
+ 
     <TextView
         android:id="@+id/filename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily=" "
-        android:text="첨부파일내용"
+        android:text="@string/mailform_recorded_file_text_contents"
         android:textSize="25sp" />
-
+    
 </LinearLayout>

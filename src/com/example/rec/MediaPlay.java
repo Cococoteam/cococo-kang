@@ -23,13 +23,18 @@ public class MediaPlay extends Activity {
 	LinearLayout layout;
 	Intent getsdPath;
 	
-	final int High = 44100;
-	final int Middle = 11025;
-	final int Low = 8000;
+	//녹음 음질을 위한 변수
+	private final int High = 44100;
+	private final int Middle = 11025;
+	private final int Low = 8000;
+	//사용자가 설정한 녹음 음질을 저장 있는 변수
+	private int frequency = Middle;
+	//녹음 채널의 수를 저장하고 있는 변수
+	private final int channelOutConfiguration = AudioFormat.CHANNEL_OUT_MONO;
+	//PCM샘플 변수
+	private final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+	
 	PlayAudio playTask;
-	int frequency = Middle;
-	int outChannelConfig = AudioFormat.CHANNEL_OUT_MONO;
-	int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
 	
 	int bufferSize;
 	AudioTrack audioTrack;
@@ -50,9 +55,8 @@ public class MediaPlay extends Activity {
         playingFile = getsdPath.getStringExtra("Path");
         position = 0;
         
-        bufferSize = AudioTrack.getMinBufferSize(frequency,outChannelConfig, audioEncoding);
-        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, frequency, outChannelConfig, audioEncoding, bufferSize, AudioTrack.MODE_STREAM);
-        isPlaying = true;
+        bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding) * 2;
+        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, frequency, channelOutConfiguration, audioEncoding, bufferSize, AudioTrack.MODE_STREAM);
         
         playTask = new PlayAudio();
         playTask.execute();
@@ -133,7 +137,7 @@ public class MediaPlay extends Activity {
     			DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(playingFile)));
 
     			audioTrack.play();
-
+    			
     			while (isPlaying && dis.available() > 0) {
     				int i = 0;
     				while (dis.available() > 0 && i < audiodata.length) {

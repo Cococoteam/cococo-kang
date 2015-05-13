@@ -22,5 +22,5 @@
 		android:layout_centerVertical="true"
 		android:layout_alignParentRight="true" 
 		android:onClick="mOnClick"
-		android:text="전송" />
+		android:text="@string/view_submit_title" />
 </RelativeLayout>

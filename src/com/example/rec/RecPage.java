@@ -1,93 +1,74 @@
 package com.example.rec;
 
-import java.io.*;
-import java.util.*;
+import org.achartengine.*;
 
 import android.app.*;
 import android.content.*;
-import android.graphics.*;
-import android.graphics.Paint.Cap;
-import android.graphics.Paint.Join;
-import android.graphics.Paint.Style;
 import android.media.*;
 import android.os.*;
-import android.util.*;
 import android.view.*;
 import android.widget.*;
-import ca.uol.aig.fftpack.*;
 
 public class RecPage extends Activity {
-	LinearLayout layout;
-	
-	final int High = 44100;
-	final int Middle = 11025;
-	final int Low = 8000;
+	LinearLayout layout, graphLayout;
+	//녹음을 위한 변수
 	RecordAudio recordTask;
-	int frequency = Middle;
-	int inchannelConfig = AudioFormat.CHANNEL_IN_MONO;
-	int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
-	
-	private RealDoubleFFT transformer;
-	int max;
-	
-	ImageView graphView;
-	Bitmap bitmap;
-	Canvas canvas;
-	Paint paint;
-	
+	RecPage_AudioReader AudioReader;
+	//계산된 Decibel을 받아오기 위한 변수
+	static int realdB;
+	//실시간 그래프를 그리기 위한 변수
+	private static GraphicalView view;
+	private RecPage_LineGraph line = new RecPage_LineGraph();
+	int blockSize;
+	//재생,정지버튼
 	Button mStartBtn, mPlayBtn;
+	//녹음상태를 나타내기위한 변수 true=녹음중, false=녹음중아님
 	boolean isRecording;
-	
-	String sdPath;
+	//재생 눌렀을때 재생될 위치를 받아볼 변수
 	String recordingFile;
-	String[] dateSplit;
-	String date1;
-	
+	//녹음시간을 나타내기 위한 변수
 	Chronometer cm;
+	//decibel를 나타내기위한 텍스트변수
+	TextView decibel;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		//액티비티 상단의 제목표시줄(TitleBar)를 없애줌
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.recui);
 		layout = (LinearLayout)findViewById(R.id.RecUI);
+		graphLayout = (LinearLayout)findViewById(R.id.graphLayout);
 		layout.setBackgroundResource(R.drawable.backimg);
 		mStartBtn = (Button)findViewById(R.id.recorded);
 		mPlayBtn = (Button)findViewById(R.id.play);
 		cm = (Chronometer)findViewById(R.id.chronometer1);
+		decibel = (TextView)findViewById(R.id.decibel);
 		mPlayBtn.setEnabled(false);
 		isRecording = false;
-		
-		graphView = (ImageView) this.findViewById(R.id.graphView);
-		bitmap = Bitmap.createBitmap((int) 256, (int) 100, Bitmap.Config.ARGB_8888);
-		canvas = new Canvas(bitmap);
-		paint = new Paint();
-		paint.setColor(Color.GREEN); paint.setStyle(Style.STROKE); paint.setStrokeCap(Cap.ROUND);
-		paint.setStrokeJoin(Join.ROUND); paint.setStrokeWidth(16.0F);
-		graphView.setImageBitmap(bitmap);
+		realdB = 0;
 		
 		mStartBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
 				if (isRecording == false) {
-					sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-					Date date = new Date();
-					date1 = date.toString();
-					dateSplit = date1.split(" ");
-					date1 = dateSplit[3];
-					File Path = new File(sdPath+"/Android/data/com.example.rec");
-					if( !Path.exists()) Path.mkdirs(); //Path경로에 디렉토리가 없다면 생성
-					recordingFile = Path + "/" + date1 + ".pcm";
+					AudioReader = new RecPage_AudioReader();
+					AudioReader.startReader();
 					recordTask = new RecordAudio();
 					recordTask.execute();
 					cm.setBase(SystemClock.elapsedRealtime());
 					cm.start();
 					isRecording = true;
-					mPlayBtn.setEnabled(true);
+					mPlayBtn.setEnabled(false);
 					mStartBtn.setText("녹음중지");
 				} else {
+					recordTask.cancel(true);
 					cm.setBase(SystemClock.elapsedRealtime());
 					cm.stop();
-					recordTask.cancel(true);
 					isRecording = false;
+					recordTask.cancel(true);
+					recordingFile = AudioReader.getRecordingFile();
+					AudioReader.stopReader();
+					AudioReader = null;
+					mPlayBtn.setEnabled(true);
 					mStartBtn.setText("녹음시작");
 				}
 			}
@@ -95,46 +76,51 @@ public class RecPage extends Activity {
 
 		mPlayBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View V) {
-					Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
-					PlayActivity.putExtra("Path", recordingFile);
-					startActivity(PlayActivity);
-					Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_SHORT).show();
+				mPlayBtn.setEnabled(false);
+				Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
+				PlayActivity.putExtra("Path", recordingFile);
+				System.out.println(recordingFile+"위치에 미디어 저장");
+				startActivity(PlayActivity);
+				Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
 			}
 		});
 	}
 	
-	private class RecordAudio extends AsyncTask<Void, Void, Void> {
+	private class RecordAudio extends AsyncTask<Void, Integer, Void> {
+		int i=0;
 		protected Void doInBackground(Void... params) {
-			try {
-				DataOutputStream dos = new DataOutputStream(
-						new BufferedOutputStream(new FileOutputStream(recordingFile)));
-
-				int bufferSize = AudioRecord.getMinBufferSize(frequency, inchannelConfig, audioEncoding);
-
-				AudioRecord audioRecord = new AudioRecord(
-						MediaRecorder.AudioSource.MIC, frequency,
-						inchannelConfig, audioEncoding, bufferSize);
-
-				short[] buffer = new short[bufferSize];
-				audioRecord.startRecording();
-				while (isRecording) {
-					int bufferReadResult = audioRecord.read(buffer, 0, bufferSize);
-					for (int i = 0; i < bufferReadResult; i++) {
-						dos.writeShort(buffer[i]);
-					}
-					//publishProgress(Integer.valueOf(r));
-				}
-				audioRecord.stop();
-				dos.close();
-			} 
-			catch (Throwable t) { Log.e("AudioRecord", "Recording Failed"); }
+			while (isRecording) {
+				try {
+					line.mRenderer.setXAxisMin(i-15);
+					line.mRenderer.setXAxisMax(i + 1);
+					publishProgress(i++);
+					realdB = AudioReader.getdB();
+					Thread.sleep(100);
+				} catch (InterruptedException e) { e.printStackTrace(); }
+			}//end while
 			return null;
-		}
-/*
-		protected void onProgressUpdate(Integer... progress) {
-			statusText.setText(progress[0].toString());
-		}
-*/
+		}//end doInBackground
+
+		protected void onProgressUpdate(Integer... params) {
+			RecPage_Point p = new RecPage_Point(params[0], realdB);
+			line.addNewPoints(p);// Add it to our graph
+			view.repaint();
+			decibel.setText(String.valueOf(realdB));
+		}//end onProgressUpdate
+	}
+	
+	protected void onStart(){
+		super.onStart();
+		view = line.getView(this);
+		graphLayout.addView(view);
+	}
+	
+	protected void onDestory(){
+		super.onDestroy();
+		recordTask.cancel(true);
+		AudioReader.stopReader();
+		AudioReader = null;
+		realdB = 0;
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {

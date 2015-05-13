@@ -14,9 +14,22 @@
     <string name="recui_recording_btn">녹음시작</string>
     <string name="recui_play_btn">재생</string>
     <string name="recui_time_title">녹음경과 시간 -   </string>
+    <string name="recui_decible_title">데시벨 - </string>
     
     <string name="mediaplay_play_btn">∥</string>
     <string name="mediaplay_stop_btn">■</string>
+    
+    <string name="filelist_title">파일목록</string>
+    
+    <string name="mailform_sender_email">보내는사람 e-mail (gmail만 사용)</string>
+    <string name="mailform_sender_passwd">보내는사람 e-mail 암호(인증필요)</string>
+    <string name="mailform_receiver_email">받는사람 e-mail</string>
+    <string name="mailform_email_title">e-mail 제목</string>
+    <string name="mailform_email_text_contents">e-mail 내용</string>
+    <string name="mailform_recorded_file_title">첨부파일</string>
+   	<string name="mailform_recorded_file_text_contents">첨부파일 내용</string>
+   	
+   	<string name="view_submit_title">전송</string>
     
     <!--  BluetoothChat -->
     <string name="send">Send</string>

@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="center_horizontal"
-            android:text="파일전송리스트"
+            android:text="@string/filelist_title"
             android:textSize="30sp"
              >
 
