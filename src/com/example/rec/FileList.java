@@ -48,7 +48,6 @@ public class FileList extends Activity {
         recordList = new ArrayList<MyItem>();
         MyItem mi;
         for(String s: mplist){
-        	//mi = new MyItem(R.drawable.ic_launcher, sdPath+s);
         	mi = new MyItem(R.drawable.ic_launcher, s);
         	recordList.add(mi);
         }

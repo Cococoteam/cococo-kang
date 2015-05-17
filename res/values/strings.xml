@@ -18,6 +18,7 @@
     
     <string name="mediaplay_play_btn">∥</string>
     <string name="mediaplay_stop_btn">■</string>
+    <string name="mediaplay_filename">재생 파일명</string>
     
     <string name="filelist_title">파일목록</string>
     

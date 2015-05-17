@@ -1,60 +1,54 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
- android:id="@+id/mediaplay_ui"
- android:orientation="vertical"
- android:layout_width="fill_parent"
- android:layout_height="fill_parent"
- >
- 
-<TextView
-  android:id="@+id/filename"  
-  android:layout_width="fill_parent" 
-  android:layout_height="wrap_content" 
-  android:textSize="15sp"
-  android:textColor="#99FFE400"
-  android:background="#000000"
-  android:gravity="center_horizontal"
-  android:text="now playing : "
-  android:layout_marginTop="10dip"
-  android:layout_marginBottom="10dip"
-  />
+    android:id="@+id/mediaplay_ui"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
 
- <LinearLayout
-  android:orientation="horizontal"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  >
-  
-  <Button
-  android:id="@+id/play"  
-  android:layout_width="match_parent" 
-  android:layout_height="wrap_content"
-  android:layout_weight="1" 
-  android:text="@string/mediaplay_play_btn"
-  />
+    <TextView
+        android:id="@+id/filename"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dip"
+        android:layout_marginTop="10dip"
+        android:background="#000000"
+        android:gravity="center_horizontal"
+        android:text="@string/mediaplay_filename"
+        android:textColor="#99FFE400"
+        android:textSize="15sp" />
 
- <Button
-  android:id="@+id/stop"  
-  android:layout_width="match_parent" 
-  android:layout_height="wrap_content" 
-  android:layout_weight="1" 
-  android:text="@string/mediaplay_stop_btn"
-  />
- </LinearLayout>
- <SeekBar 
-  android:id="@+id/progress"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  android:max="100"
-  android:progress="0"
-  android:padding="10dip"
-  />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
- <LinearLayout
-     android:id="@+id/graphLayout"
-     android:layout_width="match_parent"
-     android:layout_height="wrap_content"
-     android:orientation="vertical" >
- </LinearLayout>
+        <Button
+            android:id="@+id/play"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/mediaplay_play_btn" />
+
+        <Button
+            android:id="@+id/stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/mediaplay_stop_btn" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:padding="10dip"
+        android:progress="0" />
+
+    <LinearLayout
+        android:id="@+id/graphLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+    </LinearLayout>
 
 </LinearLayout>
-
