@@ -49,5 +49,12 @@
   android:padding="10dip"
   />
 
+ <LinearLayout
+     android:id="@+id/graphLayout"
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+     android:orientation="vertical" >
+ </LinearLayout>
+
 </LinearLayout>
 

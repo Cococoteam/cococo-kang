@@ -1,13 +1,27 @@
 package com.example.rec;
 
-import org.achartengine.*;
-
-import android.app.*;
-import android.content.*;
-import android.media.*;
-import android.os.*;
-import android.view.*;
-import android.widget.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import org.achartengine.GraphicalView;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.SystemClock;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class RecPage extends Activity {
 	LinearLayout layout, graphLayout;
@@ -30,6 +44,10 @@ public class RecPage extends Activity {
 	Chronometer cm;
 	//decibel를 나타내기위한 텍스트변수
 	TextView decibel;
+	//decibel을 저장하기 위한 배열
+	ArrayList<Integer> saveDecibel;
+	//saveDecibel의 index
+	int index;
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -46,6 +64,8 @@ public class RecPage extends Activity {
 		mPlayBtn.setEnabled(false);
 		isRecording = false;
 		realdB = 0;
+		line = new RecPage_LineGraph();
+		saveDecibel = new ArrayList<Integer>();
 		
 		mStartBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
@@ -60,7 +80,6 @@ public class RecPage extends Activity {
 					mPlayBtn.setEnabled(false);
 					mStartBtn.setText("녹음중지");
 				} else {
-					cm.setBase(SystemClock.elapsedRealtime());
 					cm.stop();
 					isRecording = false;
 					recordTask.cancel(true);
@@ -78,6 +97,7 @@ public class RecPage extends Activity {
 				mPlayBtn.setEnabled(false);
 				Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
 				PlayActivity.putExtra("Path", recordingFile);
+				PlayActivity.putIntegerArrayListExtra("saveDecibel", saveDecibel);
 				startActivity(PlayActivity);
 				Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
 			}
@@ -92,7 +112,12 @@ public class RecPage extends Activity {
 					line.mRenderer.setXAxisMin(i-15);
 					line.mRenderer.setXAxisMax(i + 1);
 					publishProgress(i++);
-					realdB = AudioReader.getdB();
+					realdB = AudioReader.getdB() + 100;
+					//1초에 한번씩 데시벨을 배열에 저장
+					//배열이 필요한 이유는 재생할때 X축-시간 Y축-데시벨을 나타내기 위해
+					if(i % 10 == 0){
+						saveDecibel.add(realdB);
+					}
 					Thread.sleep(100);
 				} catch (InterruptedException e) { e.printStackTrace(); }
 			}//end while

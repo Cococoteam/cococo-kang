@@ -481,7 +481,7 @@ containing a value of this type.
         public static final int selectexample=0x7f020025;
     }
     public static final class id {
-        public static final int RecUI=0x7f0b0034;
+        public static final int RecUI=0x7f0b0035;
         public static final int action_settings=0x7f0b003f;
         public static final int adjust_height=0x7f0b0000;
         public static final int adjust_width=0x7f0b0001;
@@ -492,16 +492,16 @@ containing a value of this type.
         public static final int buyButton=0x7f0b000c;
         public static final int buy_now=0x7f0b0011;
         public static final int buy_with_google=0x7f0b0012;
-        public static final int chronometer1=0x7f0b0037;
+        public static final int chronometer1=0x7f0b0038;
         public static final int classic=0x7f0b0014;
         public static final int connection=0x7f0b002d;
-        public static final int decibel=0x7f0b003a;
-        public static final int decibel_title=0x7f0b0039;
+        public static final int decibel=0x7f0b003b;
+        public static final int decibel_title=0x7f0b003a;
         public static final int donate_with_google=0x7f0b0013;
         public static final int editText1=0x7f0b001f;
         public static final int filelist_ui=0x7f0b001e;
         public static final int filename=0x7f0b0026;
-        public static final int graphLayout=0x7f0b003b;
+        public static final int graphLayout=0x7f0b0034;
         public static final int grayscale=0x7f0b0015;
         public static final int holo_dark=0x7f0b0007;
         public static final int holo_light=0x7f0b0008;
@@ -525,7 +525,7 @@ containing a value of this type.
         public static final int production=0x7f0b0009;
         public static final int progress=0x7f0b0033;
         public static final int receivemail=0x7f0b0023;
-        public static final int recorded=0x7f0b0038;
+        public static final int recorded=0x7f0b0039;
         public static final int recording=0x7f0b0029;
         public static final int sandbox=0x7f0b000a;
         public static final int satellite=0x7f0b0005;
@@ -539,8 +539,8 @@ containing a value of this type.
         public static final int strict_sandbox=0x7f0b000b;
         public static final int terrain=0x7f0b0006;
         public static final int text=0x7f0b003d;
-        public static final int textView1=0x7f0b0035;
-        public static final int textView2=0x7f0b0036;
+        public static final int textView1=0x7f0b0036;
+        public static final int textView2=0x7f0b0037;
         public static final int title=0x7f0b0024;
         public static final int title_new_devices=0x7f0b001b;
         public static final int title_paired_devices=0x7f0b0019;

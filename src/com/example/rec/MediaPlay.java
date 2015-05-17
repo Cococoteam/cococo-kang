@@ -3,6 +3,8 @@ package com.example.rec;
 import java.io.*;
 import java.util.*;
 
+import org.achartengine.GraphicalView;
+
 import android.app.*;
 import android.content.Intent;
 import android.media.*;
@@ -20,7 +22,7 @@ public class MediaPlay extends Activity {
 	String playingFile;
 	int position; //녹음 파일 재생위치
 	boolean isPlaying;
-	LinearLayout layout;
+	LinearLayout layout, graphLayout;
 	Intent getsdPath;
 	
 	//녹음 음질을 위한 변수
@@ -38,13 +40,19 @@ public class MediaPlay extends Activity {
 	AudioTrack audioTrack;
 	
 	int bufferSize;
+	ArrayList<Integer> saveDecibel;
+	Graphdraw GraphTask;
+	
+	private static GraphicalView view;
+	private MediaPlay_LineGraph line;
 	
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.mediaplay);
-        layout=(LinearLayout)findViewById(R.id.mediaplay_ui);
+        layout = (LinearLayout) findViewById(R.id.mediaplay_ui);
         layout.setBackgroundResource(R.drawable.backimg);
+        graphLayout = (LinearLayout) findViewById(R.id.graphLayout);
         
         play = (Button) findViewById(R.id.play);
         stop =(Button) findViewById(R.id.stop);
@@ -53,10 +61,15 @@ public class MediaPlay extends Activity {
         
         getsdPath = getIntent();
         playingFile = getsdPath.getStringExtra("Path");
+        saveDecibel = getsdPath.getIntegerArrayListExtra("saveDecibel");
         position = 0;
+        line = new MediaPlay_LineGraph();
         
-        bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding)*2;
+        bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding);
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, frequency, channelOutConfiguration, audioEncoding, bufferSize, AudioTrack.MODE_STREAM);
+        
+        GraphTask = new Graphdraw();
+        GraphTask.execute();
         
         playTask = new PlayAudio();
         playTask.execute();
@@ -116,7 +129,6 @@ public class MediaPlay extends Activity {
         getMenuInflater().inflate(R.menu.rec, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -127,6 +139,23 @@ public class MediaPlay extends Activity {
             return true;
         }
     return super.onOptionsItemSelected(item);
+    }
+    
+    private class Graphdraw extends AsyncTask<Void, Void, Void>{
+ 
+		protected Void doInBackground(Void... params) {
+			line.mRenderer.setXAxisMin(0);
+			line.mRenderer.setXAxisMax(saveDecibel.size());
+			publishProgress();
+			return null;
+		}
+		protected void onProgressUpdate(Void... params) {
+			for(int i=0; i<saveDecibel.size(); i++){
+				MediaPlay_Point p = new MediaPlay_Point(i, saveDecibel.get(i));
+				line.addNewPoints(p);
+			}
+			view.repaint();
+		}
     }
     
     // PlayAudio playTask;
@@ -164,4 +193,9 @@ public class MediaPlay extends Activity {
     	*/
     	}
 	}
+    protected void onStart(){
+		super.onStart();
+		view = line.getView(this);
+		graphLayout.addView(view);
+    }
 }
