@@ -1,32 +1,45 @@
 package com.example.rec;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import org.achartengine.GraphicalView;
-
-import android.app.*;
+import android.app.Activity;
 import android.content.Intent;
-import android.media.*;
-import android.os.*;
-import android.util.*;
-import android.view.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.*;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 public class MediaPlay extends Activity {
 	Button play,stop; //player 기능 버튼
-	TextView mp3Filename; //녹음 파일 이름
-	SeekBar mp3SeekBar; //녹음 진행바
+	TextView mp3Filename; //재생 파일 이름
+	SeekBar mp3SeekBar; //재생 진행바
 	String playingFile;
-	int position; //녹음 파일 재생위치
+	int position; //
 	boolean isPlaying;
 	LinearLayout layout, graphLayout;
 	Intent getsdPath;
 	
-	//녹음 음질을 위한 변수
+	//재생 음질을 위한 변수
 	private int frequency = 8000;
-	//녹음 채널의 수를 저장하고 있는 변수
+	//재생 채널의 수를 저장하고 있는 변수
 	private final int channelOutConfiguration = AudioFormat.CHANNEL_OUT_MONO;
 	//PCM샘플 변수
 	private final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
@@ -35,16 +48,15 @@ public class MediaPlay extends Activity {
 	AudioTrack audioTrack;
 	
 	int bufferSize;
-	ArrayList<Integer> saveDecibel;
-	//Graphdraw GraphTask;
-	
-	private static GraphicalView view;
-	private MediaPlay_LineGraph line;
 	
 	DataInputStream dis;
 	int initLength;
 	int nowLength;
 	String[] dataSplite;
+	
+	Bitmap originImage;
+	ImageView iv;
+	String graphPath;
 	
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,20 +64,26 @@ public class MediaPlay extends Activity {
         setContentView(R.layout.mediaplay);
         layout = (LinearLayout) findViewById(R.id.mediaplay_ui);
         layout.setBackgroundResource(R.drawable.backimg);
-        graphLayout = (LinearLayout) findViewById(R.id.graphLayout);
         
         play = (Button) findViewById(R.id.play);
         stop =(Button) findViewById(R.id.stop);
         mp3Filename = (TextView) findViewById(R.id.filename);
         mp3SeekBar = (SeekBar) findViewById(R.id.progress);
         
-        getsdPath = getIntent();
-        playingFile = getsdPath.getStringExtra("Path");
-        saveDecibel = getsdPath.getIntegerArrayListExtra("saveDecibel");
-        dataSplite = playingFile.split("/");
-        mp3Filename.setText("재생 파일 명: "+dataSplite[7]);
+        iv = (ImageView) findViewById(R.id.graphView);
         
-        mp3SeekBar.setMax(saveDecibel.size());
+        getsdPath = getIntent();
+        playingFile = getsdPath.getStringExtra("pcmPath");
+        graphPath = getsdPath.getStringExtra("graphPath");
+        dataSplite = playingFile.split("/");
+        mp3Filename.setText("재생 파일 명: " + dataSplite[7]);
+        
+        System.out.println("재생파일의 위치"+ playingFile);
+        System.out.println("그림파일의 위치" + graphPath);
+        originImage = BitmapFactory.decodeFile(graphPath);
+        iv.setImageBitmap(originImage);
+        
+        mp3SeekBar.setMax(100);
         
         try { 
         	dis = new DataInputStream(new BufferedInputStream(new FileInputStream(playingFile)));
@@ -76,13 +94,9 @@ public class MediaPlay extends Activity {
         catch (IOException e) { System.out.println("입출력 오류!!");; }
         
         position = 0;
-        line = new MediaPlay_LineGraph();
         
         bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding);
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, frequency, channelOutConfiguration, audioEncoding, bufferSize, AudioTrack.MODE_STREAM);
-        
-        //GraphTask = new Graphdraw();
-        //GraphTask.execute();
         
         playTask = new PlayAudio();
         playTask.execute();
@@ -168,23 +182,7 @@ public class MediaPlay extends Activity {
         }
     return super.onOptionsItemSelected(item);
     }
-/*    
-    private class Graphdraw extends AsyncTask<Void, Void, Void>{
-		protected Void doInBackground(Void... params) {
-			line.mRenderer.setXAxisMin(0);
-			line.mRenderer.setXAxisMax(saveDecibel.size());
-			publishProgress();
-			return null;
-		}
-		protected void onProgressUpdate(Void... params) {
-			for(int i=0; i<saveDecibel.size(); i++){
-				MediaPlay_Point p = new MediaPlay_Point(i, saveDecibel.get(i));
-				line.addNewPoints(p);
-			}
-			view.repaint();
-		}
-    }
-*/    
+    
     // PlayAudio playTask;
     private class PlayAudio extends AsyncTask<Void, Integer, Void> {
     	protected Void doInBackground(Void... params) {
@@ -214,13 +212,7 @@ public class MediaPlay extends Activity {
     		isPlaying = false;
     	}
 	}
-/*    
-    protected void onStart(){
-		super.onStart();
-		view = line.getView(this);
-		graphLayout.addView(view);
-    }
-*/   
+
     protected void onDestory(){
     	try {
 			dis.close();

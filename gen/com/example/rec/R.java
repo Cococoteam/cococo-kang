@@ -502,7 +502,7 @@ containing a value of this type.
         public static final int editText1=0x7f0b001f;
         public static final int filelist_ui=0x7f0b001e;
         public static final int filename=0x7f0b0026;
-        public static final int graphLayout=0x7f0b0034;
+        public static final int graphView=0x7f0b0034;
         public static final int grayscale=0x7f0b0015;
         public static final int holo_dark=0x7f0b0007;
         public static final int holo_light=0x7f0b0008;

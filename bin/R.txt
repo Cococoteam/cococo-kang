@@ -124,7 +124,7 @@ int id donate_with_google 0x7f0b0013
 int id editText1 0x7f0b001f
 int id filelist_ui 0x7f0b001e
 int id filename 0x7f0b0026
-int id graphLayout 0x7f0b0034
+int id graphView 0x7f0b0034
 int id grayscale 0x7f0b0015
 int id holo_dark 0x7f0b0007
 int id holo_light 0x7f0b0008

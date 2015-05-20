@@ -6,16 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-
 import org.achartengine.GraphicalView;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,7 +40,7 @@ public class RecPage extends Activity {
 	Button mStartBtn, mPlayBtn;
 	//녹음상태를 나타내기위한 변수 true=녹음중, false=녹음중아님
 	boolean isRecording;
-	//재생 눌렀을때 재생될 위치를 받아볼 변수
+	//녹음파일이 저징될 위치
 	String recordingFile;
 	//녹음시간을 나타내기 위한 변수
 	Chronometer cm;
@@ -61,6 +58,7 @@ public class RecPage extends Activity {
 	private graphDraw DrawTask;
 	private Bitmap bitmap;
 	private File file;
+	private String graphPath;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -69,7 +67,7 @@ public class RecPage extends Activity {
 		setContentView(R.layout.recui);
 		layout = (LinearLayout)findViewById(R.id.RecUI);
 		dynamicGraphLayout = (LinearLayout)findViewById(R.id.danamicGraphLayout);
-		staticGraphLayout = (LinearLayout) findViewById(R.id.staticGraphLayout);
+		staticGraphLayout = (LinearLayout)findViewById(R.id.staticGraphLayout);
 		layout.setBackgroundResource(R.drawable.backimg);
 		mStartBtn = (Button)findViewById(R.id.recorded);
 		mPlayBtn = (Button)findViewById(R.id.play);
@@ -80,12 +78,12 @@ public class RecPage extends Activity {
 		realdB = 0;
 		
 		dynamicPoint = new RecPage_Point();
-		dynamicLine = new RecPage_LineGraph();
+		dynamicLine = new RecPage_LineGraph(1);
 		dynamicView = dynamicLine.getView(this);
 		dynamicGraphLayout.addView(dynamicView);
 		
 		staticPoint = new RecPage_Point();
-		staticLine = new RecPage_LineGraph();
+		staticLine = new RecPage_LineGraph(2);
 		staticView = staticLine.getView(this);
 		staticGraphLayout.addView(staticView);
 		
@@ -95,6 +93,8 @@ public class RecPage extends Activity {
 			public void onClick(View v) {
 				if (isRecording == false) {//녹음 중이 아니라면, 녹음시작 버튼을 눌렀다면
 					dynamicLine.clearAll();
+					staticLine.clearAll();
+					saveDecibel.clear();
 					AudioReader = new RecPage_AudioReader();
 					AudioReader.initReader();
 					isRecording = true;
@@ -104,29 +104,31 @@ public class RecPage extends Activity {
 					cm.start();
 					mPlayBtn.setEnabled(false);
 					mStartBtn.setText("녹음중지");
-				} 
+				}//end if
 				else if(isRecording == true) {// 녹음 중이라면
 					Toast.makeText(RecPage.this, "배열의 크기"+saveDecibel.size(), Toast.LENGTH_LONG).show();
 					cm.stop();
 					isRecording = false;
 					recordTask.cancel(true);
 					recordingFile = AudioReader.getRecordingFile();
+					graphPath = recordingFile.replace(".pcm", ".png");
 					AudioReader.stopReader();
 					AudioReader = null;
 					mPlayBtn.setEnabled(true);
 					mStartBtn.setText("녹음시작");
-				}
-			}
+				}//end else if
+			}//end onClick(View v)
 		});
 		
 		mPlayBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View V) {
 				mPlayBtn.setEnabled(false);
-				Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
+				dynamicGraphLayout.setVisibility(View.GONE);
 				DrawTask = new graphDraw();
-		    	DrawTask.execute();
-				PlayActivity.putExtra("Path", recordingFile);
-				PlayActivity.putIntegerArrayListExtra("saveDecibel", saveDecibel);
+	    		DrawTask.execute();
+				Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
+				PlayActivity.putExtra("pcmPath", recordingFile);
+				PlayActivity.putExtra("graphPath", graphPath);
 				startActivity(PlayActivity);
 				Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
 			}
@@ -158,7 +160,7 @@ public class RecPage extends Activity {
 			decibel.setText(String.valueOf(realdB));
 		}//end onProgressUpdate
 	}
-	
+
     private class graphDraw extends AsyncTask<Void, Void, Void>{
 		protected Void doInBackground(Void... params) {
 			staticLine.mRenderer.setXAxisMin(0);
@@ -173,18 +175,19 @@ public class RecPage extends Activity {
 			}
 			staticView.repaint();
 			bitmap= staticView.toBitmap();
-			String FileName = recordingFile.replace(".pcm", ".png");
+			String FileName = graphPath;
 			try {
 				file = new File(FileName);
 				OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 				bitmap.compress(CompressFormat.PNG, 100, output);
 				output.close();
-				System.out.println("저장 성공!!");
-			}
+			}//try
 			catch (IOException e) { System.out.println("저장 실패!!"); }
+			staticGraphLayout.setVisibility(View.GONE);
+	    	dynamicGraphLayout.setVisibility(View.VISIBLE);
 		}
     }
-
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.rec, menu);
