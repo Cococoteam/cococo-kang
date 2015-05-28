@@ -26,6 +26,7 @@ public class BluetoothService {
          
         // BluetoothAdapter 얻기
         btAdapter = BluetoothAdapter.getDefaultAdapter();
+        System.out.println(btAdapter.getName());
     }
      
     /**
@@ -52,7 +53,6 @@ public class BluetoothService {
      */
     public void enableBluetooth() {
         Log.i(TAG, "Check the enabled Bluetooth");
-         
          
         if(btAdapter.isEnabled()) {     
             // 기기의 블루투스 상태가 On인 경우

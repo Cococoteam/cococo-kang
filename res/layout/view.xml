@@ -15,12 +15,22 @@
 		android:layout_height="wrap_content" 
 		android:layout_centerVertical="true"
 		android:layout_toRightOf="@id/img" />
-	<Button 
-		android:id="@+id/btn"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content" 
-		android:layout_centerVertical="true"
-		android:layout_alignParentRight="true" 
-		android:onClick="mOnClick"
-		android:text="@string/view_submit_title" />
+
+	<Button
+	    android:id="@+id/btn"
+	    android:layout_width="70dip"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:layout_alignParentRight="true"
+	    android:background="@drawable/play4"
+	    android:onClick="mOnClick" />
+
+	<Button
+	    android:id="@+id/play"
+	    android:layout_width="70dip"
+	    android:layout_height="wrap_content"
+	    android:layout_alignBottom="@+id/btn"
+	    android:layout_toLeftOf="@+id/btn"
+	    android:background="@drawable/play3" />
+
 </RelativeLayout>

@@ -1,14 +1,30 @@
 package com.example.rec;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
 
-import javax.activation.*;
-import javax.mail.*;
+import javax.activation.CommandMap;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.activation.MailcapCommandMap;
+import javax.mail.BodyPart;
 import javax.mail.Message;
-import javax.mail.internet.*;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
-import android.os.*;
+import android.os.AsyncTask;
   
 public class GMailSender extends javax.mail.Authenticator {  
     private String mailhost = "smtp.gmail.com";  
@@ -16,7 +32,7 @@ public class GMailSender extends javax.mail.Authenticator {
     private String password;  
     private Session session;  
   
-    public GMailSender(String user, String password) {  
+    public GMailSender(String user, String password) {
         this.user = user;  
         this.password = password;  
   
@@ -39,27 +55,31 @@ public class GMailSender extends javax.mail.Authenticator {
         return new PasswordAuthentication(user, password);  
     }  
   
-    public synchronized void sendMail(String subject, String body, String sender, String recipients,String filename) throws Exception {  
+    public synchronized void sendMail(String subject, String sender, String recipients,String filename,String filename2) throws Exception {  
         MimeMessage message = new MimeMessage(session);  
-       // DataHandler handler = new DataHandler(new ByteArrayDataSource(body.getBytes(), "text/plain"));  
         message.setSender(new InternetAddress(sender));  
         message.setSubject(subject);  
-      // message.setDataHandler(handler);  
         if (recipients.indexOf(',') > 0)  
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipients));  
         else  
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipients));  
         //텍스트와 첨부파일을 함께 전송하는 경우 create the message part
         BodyPart messageBodyPart = new MimeBodyPart();
+        BodyPart messageBodyPart2 = new MimeBodyPart();
         
         //Fill the message
-        messageBodyPart.setText(body);
         Multipart multipart = new MimeMultipart();
-        multipart.addBodyPart(messageBodyPart);
         
         //part two is attachement
+        if(!filename2.equals("0")){
+        	File file2 = new File(filename2);
+        	FileDataSource fds2 = new FileDataSource(file2);
+        	messageBodyPart2.setDataHandler(new DataHandler(fds2));
+        	messageBodyPart2.setFileName(fds2.getName());
+        	multipart.addBodyPart(messageBodyPart2);
+        }
         File file = new File(filename);
-        FileDataSource fds = new FileDataSource(file);
+        FileDataSource fds = new FileDataSource(file); 
         messageBodyPart.setDataHandler(new DataHandler(fds));
         messageBodyPart.setFileName(fds.getName());
         multipart.addBodyPart(messageBodyPart);
@@ -69,26 +89,19 @@ public class GMailSender extends javax.mail.Authenticator {
         mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
         mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
         mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
-        CommandMap.setDefaultCommandMap(mc);
-
-        
+        CommandMap.setDefaultCommandMap(mc);   
         //put parts in message
-        message.setContent(multipart);
-//        
+        message.setContent(multipart);     
         new TransportTask().execute(message);
- //       Transport.send(message);
-        
-        
-    }  
+    }
    
+    // TODO 토스트 메시지로 출력
     class TransportTask extends AsyncTask<MimeMessage, Void,Void>{
-    	@Override
     	protected Void doInBackground(MimeMessage... params) {
     		try {
 				Transport.send(params[0]);
-			} catch (MessagingException e) {
-				e.printStackTrace();
-			}
+				System.out.println("파일 전송 성공!");
+			} catch (MessagingException e) { System.out.println("파일 전송 실패!!"); }
     		return null;
     	}
        }

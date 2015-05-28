@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import android.app.Activity;
@@ -31,9 +32,9 @@ public class MediaPlay extends Activity {
 	Button play,stop; //player 기능 버튼
 	TextView mp3Filename; //재생 파일 이름
 	SeekBar mp3SeekBar; //재생 진행바
-	String playingFile;
+	String playingFile, fileInfor;
 	int position; //
-	boolean isPlaying;
+	boolean isPlay, isPause;
 	LinearLayout layout, graphLayout;
 	Intent getsdPath;
 	
@@ -50,13 +51,20 @@ public class MediaPlay extends Activity {
 	int bufferSize;
 	
 	DataInputStream dis;
+	FileReader fr;
 	int initLength;
 	int nowLength;
 	String[] dataSplite;
 	
-	Bitmap originImage;
+	Bitmap originImage = null;
 	ImageView iv;
 	String graphPath;
+	
+	int second, chooseSecond, recentSecond;
+	progressbar updateProgressbar;
+	
+	String s = new String();
+	String[] tmps;
 	
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,33 +74,38 @@ public class MediaPlay extends Activity {
         layout.setBackgroundResource(R.drawable.backimg);
         
         play = (Button) findViewById(R.id.play);
-        stop =(Button) findViewById(R.id.stop);
+        stop = (Button) findViewById(R.id.stop);
         mp3Filename = (TextView) findViewById(R.id.filename);
         mp3SeekBar = (SeekBar) findViewById(R.id.progress);
         
         iv = (ImageView) findViewById(R.id.graphView);
         
+        play.setBackgroundResource(R.drawable.pause_icon);
+        
         getsdPath = getIntent();
         playingFile = getsdPath.getStringExtra("pcmPath");
+        fileInfor = getsdPath.getStringExtra("fileInforPath");
         graphPath = getsdPath.getStringExtra("graphPath");
         dataSplite = playingFile.split("/");
         mp3Filename.setText("재생 파일 명: " + dataSplite[7]);
         
-        System.out.println("재생파일의 위치"+ playingFile);
-        System.out.println("그림파일의 위치" + graphPath);
         originImage = BitmapFactory.decodeFile(graphPath);
         iv.setImageBitmap(originImage);
         
-        mp3SeekBar.setMax(100);
-        
-        try { 
+        isPlay = true; isPause = false;
+
+        try {
         	dis = new DataInputStream(new BufferedInputStream(new FileInputStream(playingFile)));
+        	fr = new FileReader(fileInfor);
+        	s = ascTochar();
+        	tmps = s.split(" "); // 가장마지막 파일의 크기 * 640가 전체 파일의 크기
+        	tmps[0] = "0";
 			initLength = dis.available();
-			nowLength = initLength;
         }
         catch (FileNotFoundException e) { System.out.println("파일 찾기 실패!!"); }
         catch (IOException e) { System.out.println("입출력 오류!!");; }
         
+        mp3SeekBar.setMax(tmps.length-1);
         position = 0;
         
         bufferSize = AudioTrack.getMinBufferSize(frequency, channelOutConfiguration, audioEncoding);
@@ -101,28 +114,30 @@ public class MediaPlay extends Activity {
         playTask = new PlayAudio();
         playTask.execute();
         
+        updateProgressbar = new progressbar();
+        updateProgressbar.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
 		//재생 (일시정지) 버튼 이벤트 처리
 		play.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if(!isPlaying){ //재생중이지 않다면 재생을 시작
-					try {
-						dis.reset();
+				if(isPause || !isPlay){ //일시정지 중이였다면 재생
+						isPlay = true;
+						isPause = false;
 						playTask = new PlayAudio();
 						playTask.execute();
-						play.setText("∥");
-					} 
-					catch (IOException e) { System.out.println("reset 실패!!"); }
-				}else{//재생중이라면 재생을 잠시 멈춤
-					try {
-						nowLength = dis.available();
-						dis.mark(nowLength);
+						mp3SeekBar.setProgress(position);
+						updateProgressbar = new progressbar();
+						updateProgressbar.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, position);
+						play.setBackgroundResource(R.drawable.pause_icon);
+				}else{//재생중이라면 재생을 일시정지
+						isPlay = false;
+						isPause = true;
 						audioTrack.stop();
 						audioTrack.flush();
 						playTask.cancel(true);
 						playTask = null;
-						play.setText("▶");
-					} 
-					catch (IOException e) { System.out.println("available 실패!!"); }
+						updateProgressbar.cancel(true);
+						updateProgressbar = null;
+						play.setBackgroundResource(R.drawable.start_icon);
 				}//end else
 			}//end onClick(View v)
 		});// end play.setOnClickListener
@@ -130,48 +145,75 @@ public class MediaPlay extends Activity {
 		//재생멈춤 버튼 이벤트 처리
 		stop.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if(isPlaying){
+				if(isPlay){
+					try {
+					isPlay = false;
+					isPause = false;
 					audioTrack.stop();
 					audioTrack.flush();
 					playTask.cancel(true);
 					playTask = null;
-					nowLength = initLength;
+					updateProgressbar.cancel(true);
+					updateProgressbar = null;
+					position = 0;
 					mp3SeekBar.setProgress(0);
-					play.setText("▶");
-				}
-			}
-		});
-		 //progressBar 변경시 재생되는 곡의 재생위치 변경
+					dis.close();
+					dis = new DataInputStream(new BufferedInputStream(new FileInputStream(playingFile)));
+					play.setBackgroundResource(R.drawable.start_icon);
+					}//end try 
+					catch (IOException e) { e.printStackTrace(); }
+				}//end if
+			}//end onClick
+		});//end setOnClickListener
+
+		//progressBar 변경시 재생되는 곡의 재생위치 변경
 		 mp3SeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-			public void onStopTrackingTouch(SeekBar seekBar) { }
 			// 바에 터치시에는 paues
-			public void onStartTrackingTouch(SeekBar seekBar) {
-				if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING){
-					audioTrack.pause();
-				}
-			}
-			//바 변경이 발생하면 mediaPlayer.seekTo 호출
+				public void onStartTrackingTouch(SeekBar seekBar) {
+					if(audioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING){
+						try {
+							isPlay = false;
+							isPause = true;
+							dis.close();
+							dis = new DataInputStream(new BufferedInputStream(new FileInputStream(playingFile)));
+							audioTrack.stop();
+							audioTrack.flush();
+							playTask.cancel(true);
+							playTask = null;
+							updateProgressbar.cancel(true);
+							updateProgressbar = null;
+						}
+						catch (IOException e) { System.out.println("available 실패!!"); }
+					}//end if
+				}//end onStartTrackingTouch
+
+			 public void onStopTrackingTouch(SeekBar seekBar) {
+				for(int i=1; i <= chooseSecond; i++)
+					nowLength = Integer.valueOf(tmps[i]) * 640;
+				try { dis.skip(nowLength); }
+				catch (IOException e) { System.out.println("skip실패!!"); }
+				isPlay = true;
+				isPause = false;
+				playTask = new PlayAudio();
+				playTask.execute();
+				position = chooseSecond;
+				updateProgressbar = new progressbar();
+				updateProgressbar.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, position);
+			}//end onStopTrackingTouch
+			
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				//audioTrack.flush();
-				
-				/*
-				if(fromUser){
-					//mediaPlayer의 time position 이동
-					mediaPlayer.seekTo(progress);
-					//mediaPlayer.SetOnSeekCompleteListener 호출됨
-				}
-				*/
-			}
+				if(fromUser)
+					chooseSecond = seekBar.getProgress();
+			}//end onProgressChanged
 		});	 
+
     }
 
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.rec, menu);
         return true;
     }
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -187,37 +229,72 @@ public class MediaPlay extends Activity {
     private class PlayAudio extends AsyncTask<Void, Integer, Void> {
     	protected Void doInBackground(Void... params) {
     		short[] audiodata = new short[bufferSize / 4];
-    		int index=0;
-    		isPlaying = true;
     		try {
     			audioTrack.play();
-    			while (isPlaying && dis.available() > 0) {
+    			while (isPlay && dis.available() > 0) {
     				int i = 0;
+    				audioTrack.write(audiodata, 0, audiodata.length);
     				while (dis.available() > 0 && i < audiodata.length) {
     					audiodata[i] = dis.readShort();
     					i++;
-    				}//end while (dis.available() > 0 && i < audiodata.length)
-    				audioTrack.write(audiodata, 0, audiodata.length);
-    				publishProgress(++index);
-    			}// end while (isPlaying && dis.available() > 0)
+    				}//end while
+    			}// end while
     		} //end try
     		catch (Throwable t) { Log.e("AudioTrack", "Playback Failed"); }
-    		isPlaying = false;
+    		
     		return null;
     	}
+	}
+    
+    private class progressbar extends AsyncTask<Integer, Integer, Void> {
+    	int index;
+    	protected Void doInBackground(Integer... params) {
+    		index = params[0];
+    		try {
+    			while(isPlay){
+    				publishProgress(index++);
+    				position = index;
+    				Thread.sleep(1000);
+    			}
+			} 
+    		catch (InterruptedException e) { e.printStackTrace(); }
+			return null;
+    	}
+    	
     	protected void onProgressUpdate(Integer...value){
     		mp3SeekBar.setProgress(value[0]);
     	}
-    	protected void onCancelled(){
-    		isPlaying = false;
-    	}
-	}
-
-    protected void onDestory(){
+    }
+    
+    public String ascTochar(){
+    	int i;
+    	String ts = null;
     	try {
-			dis.close();
-			System.out.println("파일 닫힘.");
-		} 
-    	catch (IOException e) { System.out.println("파일 닫기 싫패!!"); }
+			while((i = fr.read()) != -1) ts = ts+(char)i;
+		}//end try
+    	catch (IOException e) { System.out.println("acsTochar오류!"); }
+    	return ts;
+    }//end acsTochar
+    
+    
+    protected void onStop(){
+    	super.onStop();
+    	try {
+    		if(playTask != null){
+    			isPlay = false;
+    			isPause = false;
+    			playTask.cancel(true);
+    			audioTrack.stop();
+    			audioTrack.flush();
+    			playTask = null;
+    			position = 0;
+    			mp3SeekBar.setProgress(0);
+    			updateProgressbar.cancel(true);
+    			updateProgressbar = null;
+    			dis.close();
+    			play.setBackgroundResource(R.drawable.start_icon);
+    		}
+		}//end try 
+		catch (IOException e) { e.printStackTrace(); }
     }
 }

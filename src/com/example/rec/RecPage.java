@@ -2,12 +2,17 @@ package com.example.rec;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
+
 import org.achartengine.GraphicalView;
+
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -35,21 +40,31 @@ public class RecPage extends Activity {
 	private static GraphicalView dynamicView;
 	private RecPage_LineGraph dynamicLine;
 	private RecPage_Point dynamicPoint;
-	int blockSize;
+	int blockSize, apneaCount;
 	//재생,정지버튼
-	Button mStartBtn, mPlayBtn;
+	Button mStartBtn, mPlayBtn, showAndClose, button2;
 	//녹음상태를 나타내기위한 변수 true=녹음중, false=녹음중아님
 	boolean isRecording;
 	//녹음파일이 저징될 위치
-	String recordingFile;
+	String recordingFile, tmpFileInforPath, tmpFileInforPath1;
+	File fileInforPath;
+	FileOutputStream fileInfor;
+	FileWriter writer, writer1;
+	
 	//녹음시간을 나타내기 위한 변수
 	Chronometer cm;
 	//decibel를 나타내기위한 텍스트변수
-	TextView decibel;
-	//decibel을 저장하기 위한 배열
-	ArrayList<Integer> saveDecibel;
+	TextView decibel,decibel_Title;
 	//saveDecibel의 index
-	int index;
+	int secondLength;
+	
+	FileReader fr;
+	String s;
+	String[] tmps;
+	// showAndCliseState = true 이면 그래프가 보이지 않는상태
+	// showAndCliseState = false 이면 그래프가 보이는 상태
+	boolean checkAndSendState, showAndCloseState, isApneaCheck;
+	LinearLayout linear;
 	
 	//그래프를 저장하기 위한 변수들
 	private static GraphicalView staticView;
@@ -59,6 +74,14 @@ public class RecPage extends Activity {
 	private Bitmap bitmap;
 	private File file;
 	private String graphPath;
+	
+	AlertDialog check;
+	int[][] tmpdB;
+	
+	checkAndSend checkandsend;
+	apenaTask apneaCheck;
+	
+	int standardValue; boolean testBoolean;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,11 +94,23 @@ public class RecPage extends Activity {
 		layout.setBackgroundResource(R.drawable.backimg);
 		mStartBtn = (Button)findViewById(R.id.recorded);
 		mPlayBtn = (Button)findViewById(R.id.play);
+		button2 = (Button) findViewById(R.id.button2);
+		showAndClose = (Button)findViewById(R.id.showandclose);
 		cm = (Chronometer)findViewById(R.id.chronometer1);
 		decibel = (TextView)findViewById(R.id.decibel);
+		decibel_Title = (TextView)findViewById(R.id.decibel_title);
+		
 		mPlayBtn.setEnabled(false);
 		isRecording = false;
+		//true이면 checkandsend 실행중, false이면 실행중이지 않음
+		checkAndSendState = false;
+		showAndCloseState = false;
+		isApneaCheck = false;
 		realdB = 0;
+		tmpdB = new int[20][2];
+		
+		standardValue = 60;
+		testBoolean = true;
 		
 		dynamicPoint = new RecPage_Point();
 		dynamicLine = new RecPage_LineGraph(1);
@@ -87,94 +122,209 @@ public class RecPage extends Activity {
 		staticView = staticLine.getView(this);
 		staticGraphLayout.addView(staticView);
 		
-		saveDecibel = new ArrayList<Integer>();
-		
 		mStartBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
-				if (isRecording == false) {//녹음 중이 아니라면, 녹음시작 버튼을 눌렀다면
-					dynamicLine.clearAll();
-					staticLine.clearAll();
-					saveDecibel.clear();
-					AudioReader = new RecPage_AudioReader();
-					AudioReader.initReader();
-					isRecording = true;
-					recordTask = new RecordAudio();
-					recordTask.execute();
-					cm.setBase(SystemClock.elapsedRealtime());
-					cm.start();
-					mPlayBtn.setEnabled(false);
-					mStartBtn.setText("녹음중지");
+				if (!isRecording) {//녹음 중이 아니라면, 녹음시작 버튼을 눌렀다면
+					try {
+						dynamicLine.clearAll();
+						staticLine.clearAll();
+						AudioReader = new RecPage_AudioReader();
+						AudioReader.initReader();
+						tmpFileInforPath = AudioReader.getRecordingFile();
+						tmpFileInforPath = tmpFileInforPath.replace("pcm", "txt");
+						writer = new FileWriter(tmpFileInforPath);
+						tmpFileInforPath1 = tmpFileInforPath.replace("txt", "text");
+						writer1 = new FileWriter(tmpFileInforPath1);
+						isRecording = true;
+						recordTask = new RecordAudio();
+						recordTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+						cm.setBase(SystemClock.elapsedRealtime());
+						cm.start();
+						mPlayBtn.setEnabled(false);
+						mStartBtn.setBackgroundResource(R.drawable.recstop);
+						}
+					 catch (IOException e) { e.printStackTrace(); }
 				}//end if
-				else if(isRecording == true) {// 녹음 중이라면
-					Toast.makeText(RecPage.this, "배열의 크기"+saveDecibel.size(), Toast.LENGTH_LONG).show();
-					cm.stop();
-					isRecording = false;
-					recordTask.cancel(true);
-					recordingFile = AudioReader.getRecordingFile();
-					graphPath = recordingFile.replace(".pcm", ".png");
-					AudioReader.stopReader();
-					AudioReader = null;
-					mPlayBtn.setEnabled(true);
-					mStartBtn.setText("녹음시작");
+				else{// 녹음 중이라면
+					try {
+						if(checkAndSendState){
+							checkandsend.cancel(true);
+							checkAndSendState = false;
+						}
+						if(com.example.rec.Rec.pairingSuccess){
+							apneaCheck.cancel(true);
+						}
+						writer.write(Integer.toString(AudioReader.getsecondLength()));
+						writer.close();
+						writer1.close();
+						cm.stop();
+						isRecording = false;
+						recordTask.cancel(true);
+						recordingFile = AudioReader.getRecordingFile();
+						graphPath = recordingFile.replace("pcm", "png");
+						AudioReader.stopReader();
+						AudioReader = null;
+						mPlayBtn.setEnabled(true);
+						mStartBtn.setBackgroundResource(R.drawable.recstart);
+					}
+					catch (IOException e) { e.printStackTrace(); }
 				}//end else if
 			}//end onClick(View v)
 		});
 		
 		mPlayBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View V) {
-				mPlayBtn.setEnabled(false);
 				dynamicGraphLayout.setVisibility(View.GONE);
+				
 				DrawTask = new graphDraw();
-	    		DrawTask.execute();
-				Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
-				PlayActivity.putExtra("pcmPath", recordingFile);
-				PlayActivity.putExtra("graphPath", graphPath);
-				startActivity(PlayActivity);
-				Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
+	    		DrawTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	    		
+	    		mStartBtn.setEnabled(false);
+	    		mPlayBtn.setEnabled(false);
+	    		showAndClose.setEnabled(false);
+			}//end onClick
+		});
+		showAndClose.setOnClickListener(new Button.OnClickListener(){
+			public void onClick(View V){
+				if(!showAndCloseState){
+					showAndCloseState = true;
+					showAndClose.setBackgroundResource(R.drawable.show);
+					dynamicGraphLayout.setVisibility(View.INVISIBLE);
+					staticGraphLayout.setVisibility(View.INVISIBLE);
+				}
+				else{
+					showAndCloseState = false;
+					showAndClose.setBackgroundResource(R.drawable.close);
+					dynamicGraphLayout.setVisibility(View.VISIBLE);
+					staticGraphLayout.setVisibility(View.VISIBLE);	
+				}
 			}
 		});
+		button2.setOnClickListener(new Button.OnClickListener(){
+			public void onClick(View V){
+				if(testBoolean){
+					testBoolean = false;
+					button2.setText("낮추기");
+					standardValue = 200;
+				}
+				else{
+					testBoolean = true;
+					button2.setText("높이기");
+					standardValue = 60;
+				}
+			}
+		});
+	}
+	
+	private class apenaTask extends AsyncTask<Void, Void, Void>{
+		int readValue;
+		protected Void doInBackground(Void... params) {
+			try {
+				while(com.example.rec.Rec.pairingSuccess){
+					readValue = com.example.rec.Rec.mInputStream.read();
+					apneaCount += readValue;
+					System.out.println("readValue = " + readValue);
+				}
+			}
+			catch (IOException e) {	
+				System.out.println("값을 받는대 실패함");
+				isApneaCheck = true;
+			}
+			return null;
+		}
 	}
 	
 	private class RecordAudio extends AsyncTask<Void, Integer, Void> {
 		int i=0;
 		protected Void doInBackground(Void... params) {
+				try { Thread.sleep(200); }
+				catch (InterruptedException e1) { e1.printStackTrace(); }
 			while (isRecording) {
 				try {
+					if(com.example.rec.Rec.pairingSuccess && !isApneaCheck){
+						apneaCheck = new apenaTask();
+						apneaCheck.execute();
+						System.out.println("apneaCount = " + apneaCount);
+					}
+					else if(isApneaCheck)
+						apneaCheck.cancel(true);
+					
+					if(i % 10 == 0){
+						secondLength = AudioReader.getsecondLength();
+						writer.write(Integer.toString(secondLength) + " ");
+					}
 					dynamicLine.mRenderer.setXAxisMin(i-15);
 					dynamicLine.mRenderer.setXAxisMax(i + 1);
-					publishProgress(i++);
 					realdB = AudioReader.getdB() + 100;
-					//0.1초에 한번씩 데시벨을 배열에 저장
-					//배열이 필요한 이유는 재생할때 X축-시간 Y축-데시벨을 나타내기 위해
-					saveDecibel.add(realdB);
+					tmpdB[i%20][0] = i;
+					tmpdB[i%20][1] = realdB;
+					publishProgress(i++);
+					//0.1초에 한번씩 데시벨을 파일에 저장
+					//파일에 저장하는 이유는 배열에 저장하게되면 2분만 넘어가도 시스템이 느려짐
+					//저장이 필요한 이유는 재생할때 보여줄 그래프를 그리기 위해
+					//재생할떄 achartengine으로 그래프를 그리면 30분짜리 녹음의 그래프 그리는데
+					//시간도 오래걸리고 전체적으로 시스템이 느려짐
+					//재생 하기전에 그래프를 그리게 되면 시스템이 매우 느려짐.
+					writer1.write(Integer.toString(realdB) + " ");
+					if(realdB > standardValue  && !checkAndSendState){
+						checkAndSendState = true;
+						checkandsend = new checkAndSend();
+						checkandsend.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+					}
+					if(checkAndSendState && checkandsend.getStatus() == AsyncTask.Status.FINISHED){
+						checkAndSendState = false;
+						checkandsend.cancel(true);
+					}
 					Thread.sleep(100);
-				} catch (InterruptedException e) { e.printStackTrace(); }
+				}
+				catch (InterruptedException e) { e.printStackTrace(); }
+				catch (IOException e) { e.printStackTrace(); }
 			}//end while
 			return null;
 		}//end doInBackground
 
 		protected void onProgressUpdate(Integer... params) {
-			dynamicPoint.setXY(params[0], realdB);
-			dynamicLine.addNewPoints(dynamicPoint);// Add it to our graph
-			dynamicView.repaint();
+			if(!showAndCloseState){
+				if(i % 20 == 0){
+					if(i != 0)
+						dynamicLine.removeData(tmpdB, dynamicPoint);
+				}
+				dynamicPoint.setXY(params[0], realdB);
+				dynamicLine.addNewPoints(dynamicPoint);// Add it to our graph
+				dynamicView.repaint();
+			}
 			decibel.setText(String.valueOf(realdB));
 		}//end onProgressUpdate
 	}
 
     private class graphDraw extends AsyncTask<Void, Void, Void>{
-		protected Void doInBackground(Void... params) {
-			staticLine.mRenderer.setXAxisMin(0);
-			staticLine.mRenderer.setXAxisMax(saveDecibel.size());
-			publishProgress();
+		FileReader fr;
+		String s;
+		String[] tmps;
+    	protected Void doInBackground(Void... params) {
+			try {
+				fr = new FileReader(tmpFileInforPath1);
+				s = ascTochar();
+				tmps = s.split(" ");
+				tmps[0] = "0";
+	    		staticLine.mRenderer.setXAxisMin(0);
+				staticLine.mRenderer.setXAxisMax(tmps.length);
+				publishProgress();
+			} 
+			catch (FileNotFoundException e) { e.printStackTrace(); }
 			return null;
 		}
 		protected void onProgressUpdate(Void... params) {
-			for(int i=0; i<saveDecibel.size(); i++){
-				staticPoint.setXY(i, saveDecibel.get(i));
+			
+			for(int i=0; i < tmps.length; i++){
+				staticPoint.setXY(i, Integer.valueOf(tmps[i]));
 				staticLine.addNewPoints(staticPoint);
 			}
+			decibel.setText("100");
+			
 			staticView.repaint();
-			bitmap= staticView.toBitmap();
+			
+			bitmap = staticView.toBitmap();
 			String FileName = graphPath;
 			try {
 				file = new File(FileName);
@@ -185,10 +335,61 @@ public class RecPage extends Activity {
 			catch (IOException e) { System.out.println("저장 실패!!"); }
 			staticGraphLayout.setVisibility(View.GONE);
 	    	dynamicGraphLayout.setVisibility(View.VISIBLE);
+	    	
+	    	mStartBtn.setEnabled(true);
+    		mPlayBtn.setEnabled(true);
+    		showAndClose.setEnabled(true);
+	    	    	
+    		Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
+			PlayActivity.putExtra("pcmPath", recordingFile);
+			PlayActivity.putExtra("fileInforPath", tmpFileInforPath);
+			PlayActivity.putExtra("graphPath", graphPath);
+			startActivity(PlayActivity);
+			Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
 		}
+	    public String ascTochar(){
+	    	int i;
+	    	String ts = null;
+	    	try {
+				while((i = fr.read()) != -1) ts = ts+(char)i;
+			}//end try
+	    	catch (IOException e) { System.out.println("acsTochar오류!"); }
+	    	return ts;
+	    }//end acsTochar
     }
-	
-	public boolean onCreateOptionsMenu(Menu menu) {
+
+    private class checkAndSend extends AsyncTask<Void, Integer, Void>{
+    	int count, loop;
+    	String state="1\n";
+    	protected Void doInBackground(Void... params) {
+    		try {
+        	  	count = 0;
+        	   	loop = 0;
+        		while(loop < 100){
+        			if(realdB > 60)
+        				count++;
+        			loop++;
+        			Thread.sleep(100);
+        		}//end while(loop)
+        		if(count > 10){
+        			System.out.println("문자열 전송");
+        			com.example.rec.Rec.mOutputStream.write(state.getBytes()); // 문자열 전송
+        		}//end if(count > -1)
+			}//end try
+    		catch (InterruptedException e) { System.out.println("슬립 오류"); }
+    		// 문자열 전송 도중 오류가 발생한 경우
+    		catch (Exception e) { System.out.println("전송 도중 오류"); }
+    		return null;
+		}//end doInBackground
+    }//end checkAndSend
+    
+    protected void onStart(){
+    	decibel_Title.setText("데시벨 -");
+    	decibel.setText("0");
+    	super.onStart();
+    }
+    
+    public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.rec, menu);
 		return true;

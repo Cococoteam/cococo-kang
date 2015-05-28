@@ -5,79 +5,90 @@
     android:padding="5pt"
     android:scrollbars="vertical" >
 
-    <TextView
+    <ScrollView
+        android:id="@+id/scrollView1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mailform_sender_email" />
+        android:layout_height="wrap_content" >
 
-    <EditText
-        android:id="@+id/sendemail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textEmailAddress" >
-        <requestFocus />
-    </EditText>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+            <TextView android:id="@+id/TextView01" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/mailform_recorded_file_text_contents" android:textSize="25sp"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:text="@string/mailform_sender_passwd" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mailform_sender_email" />
 
-    <EditText
-        android:id="@+id/password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPassword" />
+            <EditText
+                android:id="@+id/sendemail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:text="yichangsin@gmail.com"
+                android:inputType="textEmailAddress" >
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mailform_receiver_email" />
+                <requestFocus />
+            </EditText>
 
-    <EditText
-        android:id="@+id/receivemail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textEmailAddress" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbarAlwaysDrawVerticalTrack="true"
+                android:text="@string/mailform_sender_passwd" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mailform_email_title" />
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:text="changsin12"
+                android:inputType="textPassword" />
 
-    <EditText
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textMultiLine" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mailform_receiver_email" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mailform_email_text_contents" />
+            <EditText
+                android:id="@+id/receivemail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:text="ycs318@naver.com"
+                android:inputType="textEmailAddress" />
 
-    <EditText
-        android:id="@+id/message"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textMultiLine" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mailform_email_title" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mailform_recorded_file_title" />
- 
-    <TextView
-        android:id="@+id/filename"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mailform_recorded_file_text_contents"
-        android:textSize="25sp" />
-    
+            <EditText
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textMultiLine" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mailform_recorded_file_title" />
+
+            <TextView
+                android:id="@+id/filename"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mailform_recorded_file_text_contents"
+                android:textSize="25sp" />
+            <TextView
+                android:id="@+id/graphname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mailform_recorded_file_text_contents"
+                android:textSize="25sp" />
+        </LinearLayout>
+    </ScrollView>
+
 </LinearLayout>

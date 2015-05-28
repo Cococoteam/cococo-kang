@@ -31,6 +31,9 @@
    	<string name="mailform_recorded_file_text_contents">첨부파일 내용</string>
    	
    	<string name="view_submit_title">전송</string>
+   	<string name="view_play_title">재생</string>
+   	
+   	<string name="saving_rate_title">진행률 :</string>
     
     <!--  BluetoothChat -->
     <string name="send">Send</string>
@@ -51,4 +54,6 @@
     <string name="secure_connect">Connect a device - Secure</string>
     <string name="insecure_connect">Connect a device - Insecure</string>
     <string name="discoverable">Make discoverable</string>
+    
+    
 </resources>

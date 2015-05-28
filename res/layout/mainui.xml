@@ -21,68 +21,62 @@
 
         <Button
             android:id="@+id/recording"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_width="147dp"
+            android:layout_height="42dp"
             android:layout_row="1"
+            android:background="@drawable/rec"
             android:padding="5dip"
-            android:text="@string/mainui_recording_title"
             android:textSize="20sp" />
 
         <Button
             android:id="@+id/select"
             android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:layout_column="1"
             android:layout_gravity="right|top"
             android:layout_row="1"
+            android:background="@drawable/file"
             android:padding="5dip"
-            android:text="@string/mainui_select_title"
             android:textSize="20sp" />
+
     </GridLayout>
 
-   
-    
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:columnCount="2" >
 
-    <Button
-        android:id="@+id/bluetooth"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-         android:layout_row="1"
-        android:padding="5dip"
-        android:text="Bluetooth ON"
-        android:textSize="20sp" />
+        <Button
+            android:id="@+id/bluetooth"
+            android:layout_width="150dp"
+            android:layout_height="42dp"
+            android:layout_column="0"
+            android:layout_gravity="left|center_vertical"
+            android:layout_row="1"
+            android:background="@drawable/bluetooth"
+            android:padding="5dip"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/search"
+            android:layout_width="150dp"
+            android:layout_height="42dp"
+            android:layout_column="1"
+            android:layout_gravity="right|top"
+            android:layout_row="1"
+            android:background="@drawable/search"
+            android:padding="5dip"
+            android:textSize="20sp" />
+
+    </GridLayout>
 
     <Button
-        android:id="@+id/search"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_gravity="right|top"
-        android:layout_row="1"
-        android:padding="5dip"
-        android:text="장치검색"
-        android:textSize="20sp" />
-    </GridLayout>
-    
-     <Button
         android:id="@+id/connection"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="49dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/mainui_connection_title"
-        android:textSize="20sp" />
-
-    <Button
-        android:id="@+id/setting"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:text="@string/mainui_setting_title"
+        android:background="@drawable/hospital"
         android:textSize="20sp" />
 
 </LinearLayout>
