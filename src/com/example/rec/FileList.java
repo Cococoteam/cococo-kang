@@ -113,7 +113,6 @@ public class FileList extends Activity {
 			TextView txt = (TextView) convertView.findViewById(R.id.text);
 			txt.setText("  "+arSrc.get(pos).Name);
 			
-			
 			Button btn = (Button) convertView.findViewById(R.id.btn);
 			Button play = (Button) convertView.findViewById(R.id.play);
 			btn.setOnClickListener(new Button.OnClickListener(){
@@ -168,10 +167,12 @@ public class FileList extends Activity {
 					String pcmPath = sdPath+"/Android/data/com.example.rec/"+arSrc.get(pos).Name;
 					String txtPath = pcmPath.replace("pcm", "txt");
 					String graphPath = pcmPath.replace("pcm", "png");
+					String countPath = pcmPath.replace("pcm", "count");
 					Intent PlayActivity = new Intent(FileList.this, MediaPlay.class);
 					PlayActivity.putExtra("pcmPath", pcmPath);
 					PlayActivity.putExtra("fileInforPath", txtPath);
 					PlayActivity.putExtra("graphPath", graphPath);
+					PlayActivity.putExtra("countPath", countPath);
 					startActivity(PlayActivity);
 				}
 			});

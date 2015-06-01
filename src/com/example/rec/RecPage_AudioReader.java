@@ -148,6 +148,10 @@ public class RecPage_AudioReader {
 	public String getRecordingFile(){
 		return recordingFile;
 	}
+	
+	public String getFilePath(){
+		return sdPath+"/Android/data/com.example.rec/";
+	}
 	public int getdB(){
 		return dB;
 	}

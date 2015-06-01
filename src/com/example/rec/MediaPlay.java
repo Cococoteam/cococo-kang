@@ -30,7 +30,7 @@ import android.widget.TextView;
 
 public class MediaPlay extends Activity {
 	Button play,stop; //player 기능 버튼
-	TextView mp3Filename; //재생 파일 이름
+	TextView mp3Filename, snore, apnea; //재생 파일 이름
 	SeekBar mp3SeekBar; //재생 진행바
 	String playingFile, fileInfor;
 	int position; //
@@ -51,14 +51,14 @@ public class MediaPlay extends Activity {
 	int bufferSize;
 	
 	DataInputStream dis;
-	FileReader fr;
+	FileReader fr, countReader;
 	int initLength;
 	int nowLength;
 	String[] dataSplite;
 	
 	Bitmap originImage = null;
 	ImageView iv;
-	String graphPath;
+	String graphPath, countPath;
 	
 	int second, chooseSecond, recentSecond;
 	progressbar updateProgressbar;
@@ -76,6 +76,8 @@ public class MediaPlay extends Activity {
         play = (Button) findViewById(R.id.play);
         stop = (Button) findViewById(R.id.stop);
         mp3Filename = (TextView) findViewById(R.id.filename);
+        snore = (TextView) findViewById(R.id.snore);
+        apnea = (TextView) findViewById(R.id.apnea);
         mp3SeekBar = (SeekBar) findViewById(R.id.progress);
         
         iv = (ImageView) findViewById(R.id.graphView);
@@ -86,9 +88,21 @@ public class MediaPlay extends Activity {
         playingFile = getsdPath.getStringExtra("pcmPath");
         fileInfor = getsdPath.getStringExtra("fileInforPath");
         graphPath = getsdPath.getStringExtra("graphPath");
+        countPath = getsdPath.getStringExtra("countPath");
         dataSplite = playingFile.split("/");
         mp3Filename.setText("재생 파일 명: " + dataSplite[7]);
         
+        try {
+			countReader = new FileReader(countPath);
+			char ts, ts1, ts2;
+	    	ts = (char) countReader.read();
+	    	ts1 = (char) countReader.read();
+	    	ts2 = (char) countReader.read();
+			snore.setText(String.valueOf(ts)+ " ");
+			apnea.setText(String.valueOf(ts2));
+		} 
+        catch (FileNotFoundException e1) { e1.printStackTrace(); }
+        catch (IOException e) { e.printStackTrace(); }
         originImage = BitmapFactory.decodeFile(graphPath);
         iv.setImageBitmap(originImage);
         

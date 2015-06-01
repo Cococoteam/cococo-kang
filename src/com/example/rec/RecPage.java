@@ -40,9 +40,9 @@ public class RecPage extends Activity {
 	private static GraphicalView dynamicView;
 	private RecPage_LineGraph dynamicLine;
 	private RecPage_Point dynamicPoint;
-	int blockSize, apneaCount;
+	int blockSize, apneaCount, snoringCount;
 	//재생,정지버튼
-	Button mStartBtn, mPlayBtn, showAndClose, button2;
+	Button mStartBtn, mPlayBtn, showAndClose;
 	//녹음상태를 나타내기위한 변수 true=녹음중, false=녹음중아님
 	boolean isRecording;
 	//녹음파일이 저징될 위치
@@ -83,6 +83,11 @@ public class RecPage extends Activity {
 	
 	int standardValue; boolean testBoolean;
 	
+	String countPath;
+	String countName;
+	
+	Button button1;
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//액티비티 상단의 제목표시줄(TitleBar)를 없애줌
@@ -94,11 +99,13 @@ public class RecPage extends Activity {
 		layout.setBackgroundResource(R.drawable.backimg);
 		mStartBtn = (Button)findViewById(R.id.recorded);
 		mPlayBtn = (Button)findViewById(R.id.play);
-		button2 = (Button) findViewById(R.id.button2);
 		showAndClose = (Button)findViewById(R.id.showandclose);
 		cm = (Chronometer)findViewById(R.id.chronometer1);
 		decibel = (TextView)findViewById(R.id.decibel);
 		decibel_Title = (TextView)findViewById(R.id.decibel_title);
+		button1 = (Button) findViewById(R.id.button1);
+		
+		button1.setText("업");
 		
 		mPlayBtn.setEnabled(false);
 		isRecording = false;
@@ -107,6 +114,8 @@ public class RecPage extends Activity {
 		showAndCloseState = false;
 		isApneaCheck = false;
 		realdB = 0;
+		apneaCount = 0;
+		snoringCount = 0;
 		tmpdB = new int[20][2];
 		
 		standardValue = 60;
@@ -121,6 +130,26 @@ public class RecPage extends Activity {
 		staticLine = new RecPage_LineGraph(2);
 		staticView = staticLine.getView(this);
 		staticGraphLayout.addView(staticView);
+		
+		String tmpData = "2\n";
+		try {
+			com.example.rec.Rec.mOutputStream.write(tmpData.getBytes());
+			System.out.println("시작하자마자 블루투스에 " + tmpData + " 전송");
+		} catch (IOException e) { System.out.println("데이터 전송 실패!!");	}
+		
+		
+		button1.setOnClickListener(new Button.OnClickListener(){
+			public void onClick(View v){
+				if(standardValue == 60){
+					button1.setText("다운");
+					standardValue = 200;
+				}
+				else{
+					button1.setText("업");
+					standardValue = 60;
+				}
+			}
+		});
 		
 		mStartBtn.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
@@ -162,6 +191,8 @@ public class RecPage extends Activity {
 						recordTask.cancel(true);
 						recordingFile = AudioReader.getRecordingFile();
 						graphPath = recordingFile.replace("pcm", "png");
+						countName = String.valueOf(snoringCount)+ " " + String.valueOf(apneaCount);
+						countPath = graphPath.replace("png", "count");
 						AudioReader.stopReader();
 						AudioReader = null;
 						mPlayBtn.setEnabled(true);
@@ -200,20 +231,6 @@ public class RecPage extends Activity {
 				}
 			}
 		});
-		button2.setOnClickListener(new Button.OnClickListener(){
-			public void onClick(View V){
-				if(testBoolean){
-					testBoolean = false;
-					button2.setText("낮추기");
-					standardValue = 200;
-				}
-				else{
-					testBoolean = true;
-					button2.setText("높이기");
-					standardValue = 60;
-				}
-			}
-		});
 	}
 	
 	private class apenaTask extends AsyncTask<Void, Void, Void>{
@@ -223,13 +240,13 @@ public class RecPage extends Activity {
 				while(com.example.rec.Rec.pairingSuccess){
 					readValue = com.example.rec.Rec.mInputStream.read();
 					apneaCount += readValue;
-					System.out.println("readValue = " + readValue);
 				}
 			}
-			catch (IOException e) {	
+			catch (IOException e) {
 				System.out.println("값을 받는대 실패함");
-				isApneaCheck = true;
+				isApneaCheck = false;
 			}
+			System.out.println(isApneaCheck);
 			return null;
 		}
 	}
@@ -244,7 +261,6 @@ public class RecPage extends Activity {
 					if(com.example.rec.Rec.pairingSuccess && !isApneaCheck){
 						apneaCheck = new apenaTask();
 						apneaCheck.execute();
-						System.out.println("apneaCount = " + apneaCount);
 					}
 					else if(isApneaCheck)
 						apneaCheck.cancel(true);
@@ -301,6 +317,7 @@ public class RecPage extends Activity {
 		FileReader fr;
 		String s;
 		String[] tmps;
+		FileWriter countWriter;
     	protected Void doInBackground(Void... params) {
 			try {
 				fr = new FileReader(tmpFileInforPath1);
@@ -315,12 +332,10 @@ public class RecPage extends Activity {
 			return null;
 		}
 		protected void onProgressUpdate(Void... params) {
-			
 			for(int i=0; i < tmps.length; i++){
 				staticPoint.setXY(i, Integer.valueOf(tmps[i]));
 				staticLine.addNewPoints(staticPoint);
 			}
-			decibel.setText("100");
 			
 			staticView.repaint();
 			
@@ -331,6 +346,11 @@ public class RecPage extends Activity {
 				OutputStream output = new BufferedOutputStream(new FileOutputStream(file));
 				bitmap.compress(CompressFormat.PNG, 100, output);
 				output.close();
+				fr.close();
+				
+				countWriter = new FileWriter(countPath);
+				countWriter.write(countName);
+				countWriter.close();
 			}//try
 			catch (IOException e) { System.out.println("저장 실패!!"); }
 			staticGraphLayout.setVisibility(View.GONE);
@@ -339,11 +359,12 @@ public class RecPage extends Activity {
 	    	mStartBtn.setEnabled(true);
     		mPlayBtn.setEnabled(true);
     		showAndClose.setEnabled(true);
-	    	    	
+    		 	
     		Intent PlayActivity = new Intent(RecPage.this, MediaPlay.class);
 			PlayActivity.putExtra("pcmPath", recordingFile);
 			PlayActivity.putExtra("fileInforPath", tmpFileInforPath);
 			PlayActivity.putExtra("graphPath", graphPath);
+			PlayActivity.putExtra("countPath", countPath);
 			startActivity(PlayActivity);
 			Toast.makeText(RecPage.this, "방금 녹음한 파일이 재생됩니다.", Toast.LENGTH_LONG).show();
 		}
@@ -351,7 +372,8 @@ public class RecPage extends Activity {
 	    	int i;
 	    	String ts = null;
 	    	try {
-				while((i = fr.read()) != -1) ts = ts+(char)i;
+				while((i = fr.read()) != -1) 
+					ts = ts+(char)i;
 			}//end try
 	    	catch (IOException e) { System.out.println("acsTochar오류!"); }
 	    	return ts;
@@ -365,15 +387,16 @@ public class RecPage extends Activity {
     		try {
         	  	count = 0;
         	   	loop = 0;
-        		while(loop < 100){
+        		while(loop < 20){
         			if(realdB > 60)
         				count++;
         			loop++;
         			Thread.sleep(100);
         		}//end while(loop)
-        		if(count > 10){
-        			System.out.println("문자열 전송");
+        		if(count > 0){
+        			snoringCount++;
         			com.example.rec.Rec.mOutputStream.write(state.getBytes()); // 문자열 전송
+        			System.out.println("코골아서 문자열 전송!!");
         		}//end if(count > -1)
 			}//end try
     		catch (InterruptedException e) { System.out.println("슬립 오류"); }
@@ -382,13 +405,7 @@ public class RecPage extends Activity {
     		return null;
 		}//end doInBackground
     }//end checkAndSend
-    
-    protected void onStart(){
-    	decibel_Title.setText("데시벨 -");
-    	decibel.setText("0");
-    	super.onStart();
-    }
-    
+       
     public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.rec, menu);

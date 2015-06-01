@@ -95,11 +95,11 @@
                 android:background="@drawable/close" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/button1"
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="높이기" />
+                android:text="Button" />
 
         </LinearLayout>
 
